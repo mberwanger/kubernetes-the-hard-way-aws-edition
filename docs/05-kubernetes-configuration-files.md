@@ -4,7 +4,7 @@ In this lab you will generate [Kubernetes configuration files](https://kubernete
 
 ## Client Authentication Configs
 
-In this section you will generate kubeconfig files for the `kubelet` and `kube-proxy` clients.
+In this section you will generate kubeconfig files for the `controller manager`, `kubelet`, `kube-proxy`, and `scheduler` clients and the `admin` user.
 
 > The `scheduler` and `controller manager` access the Kubernetes API Server locally over an insecure API port which does not require authentication. The Kubernetes API Server's insecure port is only enabled for local access.
 
@@ -201,8 +201,10 @@ done
 
 Copy the appropriate `kube-controller-manager` and `kube-scheduler` kubeconfig files to each controller instance:
 
+```
 for instance in controller-0 controller-1 controller-2; do
   scp -i ~/.ssh/kubernetes-the-hard-way.pem admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig ubuntu@$(ip_from_instance "$instance"):~/
 done
+```
 
 Next: [Generating the Data Encryption Config and Key](06-data-encryption-keys.md)
