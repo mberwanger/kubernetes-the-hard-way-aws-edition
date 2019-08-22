@@ -185,10 +185,6 @@ EOF
 ### Start the Controller Services
 
 ```
-sudo mv kube-apiserver.service kube-scheduler.service kube-controller-manager.service /etc/systemd/system/
-```
-
-```
 sudo systemctl daemon-reload
 ```
 
