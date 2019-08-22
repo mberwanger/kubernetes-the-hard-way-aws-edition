@@ -173,6 +173,45 @@ worker-2-key.pem
 worker-2.pem
 ```
 
+### The kube-controller-manager Client Certificate
+
+Generate the `kube-controller-manager` client certificate and private key:
+
+```
+cat > kube-controller-manager-csr.json <<EOF
+{
+  "CN": "system:kube-controller-manager",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "Portland",
+      "O": "system:kube-controller-manager",
+      "OU": "Kubernetes The Hard Way",
+      "ST": "Oregon"
+    }
+  ]
+}
+EOF
+
+cfssl gencert \
+  -ca=ca.pem \
+  -ca-key=ca-key.pem \
+  -config=ca-config.json \
+  -profile=kubernetes \
+  kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
+```
+
+Results:
+
+```
+kube-controller-manager-key.pem
+kube-controller-manager.pem
+```
+
 ### The kube-proxy Client Certificate
 
 Create the `kube-proxy` client certificate signing request:
@@ -214,6 +253,45 @@ Results:
 ```
 kube-proxy-key.pem
 kube-proxy.pem
+```
+
+### The kube-scheduler Client Certificate
+
+Generate the `kube-scheduler` client certificate and private key:
+
+```
+cat > kube-scheduler-csr.json <<EOF
+{
+  "CN": "system:kube-scheduler",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "Portland",
+      "O": "system:kube-scheduler",
+      "OU": "Kubernetes The Hard Way",
+      "ST": "Oregon"
+    }
+  ]
+}
+EOF
+
+cfssl gencert \
+  -ca=ca.pem \
+  -ca-key=ca-key.pem \
+  -config=ca-config.json \
+  -profile=kubernetes \
+  kube-scheduler-csr.json | cfssljson -bare kube-scheduler
+```
+
+Results:
+
+```
+kube-scheduler-key.pem
+kube-scheduler.pem
 ```
 
 ### The Kubernetes API Server Certificate
@@ -271,6 +349,45 @@ kubernetes-key.pem
 kubernetes.pem
 ```
 
+### The service-account Key Pair
+The Kubernetes Controller Manager leverages a key pair to generate and sign service account tokens as describe in the managing service accounts documentation.
+
+Generate the `service-account` certificate and private key:
+
+```
+cat > service-account-csr.json <<EOF
+{
+  "CN": "service-accounts",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "Portland",
+      "O": "Kubernetes",
+      "OU": "Kubernetes The Hard Way",
+      "ST": "Oregon"
+    }
+  ]
+}
+EOF
+
+cfssl gencert \
+  -ca=ca.pem \
+  -ca-key=ca-key.pem \
+  -config=ca-config.json \
+  -profile=kubernetes \
+  service-account-csr.json | cfssljson -bare service-account
+```
+
+Results:
+```
+service-account-key.pem
+service-account.pem
+```
+
 ## Distribute the Client and Server Certificates
 
 Copy the appropriate certificates and private keys to each worker instance:
@@ -285,7 +402,7 @@ Copy the appropriate certificates and private keys to each controller instance:
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  scp -i ~/.ssh/kubernetes-the-hard-way.pem ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem ubuntu@$(ip_from_instance "$instance"):~/
+  scp -i ~/.ssh/kubernetes-the-hard-way.pem ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem ubuntu@$(ip_from_instance "$instance"):~/
 done
 ```
 
