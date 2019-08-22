@@ -149,19 +149,6 @@ Move the 'kube-scheduler' kubeconfig into place:
 sudo mv kube-scheduler.kubeconfig /var/lib/kubernetes/
 ```
 
-Create the 'kube-scheduler.yaml' configuration file:
-
-```
-cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: componentconfig/v1alpha1
-kind: KubeSchedulerConfiguration
-clientConnection:
-  kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
-leaderElection:
-  leaderElect: true
-EOF
-```
-
 Create the `kube-scheduler.service` systemd unit file:
 
 ```
@@ -171,8 +158,9 @@ Description=Kubernetes Scheduler
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/local/bin/kube-scheduler \\
-  --config=/etc/kubernetes/config/kube-scheduler.yaml \\
+ExecStart=/usr/local/bin/kube-scheduler \
+  --leader-elect=true \
+  --kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig \
   --v=2
 Restart=on-failure
 RestartSec=5
