@@ -47,7 +47,7 @@ sudo mkdir -p /var/lib/kubernetes/
 ```
 
 ```
-sudo mv ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem encryption-config.yaml /var/lib/kubernetes/
+sudo mv ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem encryption-config.yaml /var/lib/kubernetes/
 ```
 
 The instance private IP address will be used to advertise the API Server to members of the cluster. Retrieve the private IP address for the current compute instance:
