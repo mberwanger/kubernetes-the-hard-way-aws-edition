@@ -91,7 +91,7 @@ source <(curl -s http://instance-data/latest/user-data | sed 's/\\n/\n/g')
 Create the `bridge` network configuration file:
 
 ```
-cat > 10-bridge.conf <<EOF
+cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
 {
     "cniVersion": "0.3.1",
     "name": "bridge",
@@ -113,18 +113,12 @@ EOF
 Create the `loopback` network configuration file:
 
 ```
-cat > 99-loopback.conf <<EOF
+cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
 {
     "cniVersion": "0.3.1",
     "type": "loopback"
 }
 EOF
-```
-
-Move the network configuration files to the CNI configuration directory:
-
-```
-sudo mv 10-bridge.conf 99-loopback.conf /etc/cni/net.d/
 ```
 
 ### Configure containerd
