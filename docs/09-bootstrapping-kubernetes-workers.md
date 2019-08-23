@@ -189,35 +189,53 @@ sudo mv ${INSTANCE_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
 sudo mv ca.pem /var/lib/kubernetes/
 ```
 
+Create the `kubelet-config.yaml` configuration file:
+
+```
+cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  x509:
+    clientCAFile: "/var/lib/kubernetes/ca.pem"
+authorization:
+  mode: Webhook
+clusterDomain: "cluster.local"
+clusterDNS:
+  - "10.32.0.10"
+podCIDR: "${POD_CIDR}"
+resolvConf: "/run/systemd/resolve/resolv.conf"
+runtimeRequestTimeout: "15m"
+tlsCertFile: "/var/lib/kubelet/${INSTANCE_NAME}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/${INSTANCE_NAME}-key.pem"
+EOF
+```
+
+> The `resolvConf` configuration is used to avoid loops when using CoreDNS for service discovery on systems running `systemd-resolved`. 
+
 Create the `kubelet.service` systemd unit file:
 
 ```
-cat > kubelet.service <<EOF
+cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
 [Unit]
 Description=Kubernetes Kubelet
 Documentation=https://github.com/kubernetes/kubernetes
-After=cri-containerd.service
-Requires=cri-containerd.service
+After=containerd.service
+Requires=containerd.service
 
 [Service]
 ExecStart=/usr/local/bin/kubelet \\
-  --allow-privileged=true \\
-  --anonymous-auth=false \\
-  --authorization-mode=Webhook \\
-  --client-ca-file=/var/lib/kubernetes/ca.pem \\
-  --cloud-provider= \\
-  --cluster-dns=10.32.0.10 \\
-  --cluster-domain=cluster.local \\
+  --config=/var/lib/kubelet/kubelet-config.yaml \\
   --container-runtime=remote \\
-  --container-runtime-endpoint=unix:///var/run/cri-containerd.sock \\
+  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
   --image-pull-progress-deadline=2m \\
   --kubeconfig=/var/lib/kubelet/kubeconfig \\
   --network-plugin=cni \\
-  --pod-cidr=${POD_CIDR} \\
   --register-node=true \\
-  --runtime-request-timeout=15m \\
-  --tls-cert-file=/var/lib/kubelet/${INSTANCE_NAME}.pem \\
-  --tls-private-key-file=/var/lib/kubelet/${INSTANCE_NAME}-key.pem \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -231,6 +249,19 @@ EOF
 
 ```
 sudo mv kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig
+```
+
+Create the `kube-proxy-config.yaml` configuration file:
+
+```
+cat <<EOF | sudo tee /var/lib/kube-proxy/kube-proxy-config.yaml
+kind: KubeProxyConfiguration
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+clientConnection:
+  kubeconfig: "/var/lib/kube-proxy/kubeconfig"
+mode: "iptables"
+clusterCIDR: "10.200.0.0/16"
+EOF
 ```
 
 Create the `kube-proxy.service` systemd unit file:
@@ -256,10 +287,6 @@ EOF
 ```
 
 ### Start the Worker Services
-
-```
-sudo mv kubelet.service kube-proxy.service /etc/systemd/system/
-```
 
 ```
 sudo systemctl daemon-reload
