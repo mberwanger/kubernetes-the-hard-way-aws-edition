@@ -199,7 +199,7 @@ for i in 0 1 2; do
   EXISTING_SECURITY_GROUPS=$(aws ec2 describe-instances \
     --filters "Name=tag:Name,Values=worker-${i}" | jq -r '.Reservations[].Instances[].SecurityGroups[].GroupId' | tr '\n' ' ')
 
-  aws ec2 modify-instance-attribute \
+  eval aws ec2 modify-instance-attribute \
     --instance-id ${INSTANCE_ID} \
     --groups ${EXISTING_SECURITY_GROUPS} ${NGINX_SECURITY_GROUP_ID}
 done
