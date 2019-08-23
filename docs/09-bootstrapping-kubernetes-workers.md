@@ -210,8 +210,8 @@ clusterDNS:
 podCIDR: "${POD_CIDR}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
-tlsCertFile: "/var/lib/kubelet/${HOSTNAME}.pem"
-tlsPrivateKeyFile: "/var/lib/kubelet/${HOSTNAME}-key.pem"
+tlsCertFile: "/var/lib/kubelet/${INSTANCE_NAME}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/${INSTANCE_NAME}-key.pem"
 EOF
 ```
 
