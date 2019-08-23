@@ -156,7 +156,7 @@ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
-  -hostname=${HOSTNAME},${instance},${PUBLIC_ADDRESS},${PRIVATE_ADDRESS} \
+  -hostname=${PRIVATE_DNS_NAME},${instance},${PUBLIC_ADDRESS},${PRIVATE_ADDRESS} \
   -profile=kubernetes \
   ${instance}-csr.json | cfssljson -bare ${instance}
 done
